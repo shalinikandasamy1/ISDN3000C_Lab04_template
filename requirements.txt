@@ -1,0 +1,2 @@
+# Add necessary Python packages here
+# For now, just the standard library is used, so this can be empty or include future dependencies
