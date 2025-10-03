@@ -1,0 +1,27 @@
+Brief Network Setup Description
+
+The RDK-X5 development board is configured with a default static IP address of 192.168.127.10 on its Ethernet interface (eth0). This default static IP is preset by the manufacturer to enable direct wired connection for development and testing.
+
+My laptop’s Ethernet interface is configured with a static IP address within the same subnet, usually 192.168.127.12, and a subnet mask of 255.255.255.0. This ensures both devices are on the same private local network without requiring a gateway or DHCP server.
+
+The RDK-X5 and laptop are connected directly using an Ethernet cable. This direct connection facilitates seamless SSH access and TCP socket communication without interference from other networking equipment.
+
+The RDK-X5 also typically maintains an independent Wi-Fi connection on its wireless interface (wlan0), providing internet access and acting as a secure management channel separate from the Ethernet interface.
+
+Data Format Chosen
+
+The communication between the client and server uses the JSON (JavaScript Object Notation) data format.
+
+When the client sends the request message "GET_DATA", the server gathers system information including:
+
+Device MAC address (eth0)
+
+System uptime
+
+Current timestamp in ISO format
+
+This information is structured as a Python dictionary and then serialized to a JSON string before being sent back to the client.
+
+The client receives the JSON string, parses it back into a dictionary, and displays the system information in a user-friendly format.
+
+The choice of JSON ensures that data is easily exchangeable, human-readable, and compatible with almost any programming language or platform.
