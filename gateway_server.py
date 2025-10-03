@@ -56,15 +56,20 @@ def handle_client(conn, addr):
 
             print(f"Received request from {addr}: {request}")
 
-            ## --- TODO: YOUR CODE GOES HERE --- ##
-            # 1. Check if the client's request is valid (e.g., is it "GET_DATA"?).
-            # 2. If the request is valid, call the get_system_info() function to get the data.
-            # 3. Choose a data format (JSON is recommended) and serialize the data into a string.
-            #    For example, using the json library: json.dumps(your_data_dictionary)
-            # 4. Encode the serialized string to bytes and send it back to the client.
-            #    Example: conn.sendall(formatted_data.encode('utf-8'))
-            # 5. If the request is not valid, you could send back an error message.
-            ## --- END OF TODO --- ##
+            # Check if the client's request is valid (e.g., "GET_DATA")
+            if request == "GET_DATA":
+                # Call the get_system_info() function to get the data
+                info = get_system_info()
+
+                # Serialize the data to JSON string
+                response = json.dumps(info)
+
+                # Send the encoded response back to the client
+                conn.sendall(response.encode('utf-8'))
+            else:
+                # Send back error message if request invalid
+                error_msg = "ERROR: Invalid command"
+                conn.sendall(error_msg.encode('utf-8'))
 
     print(f"[CONNECTION CLOSED] {addr} disconnected.")
 
