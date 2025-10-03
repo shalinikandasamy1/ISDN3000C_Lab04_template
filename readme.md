@@ -19,6 +19,7 @@ This repository contains code and documentation for the RDK-X5 Network Fundament
 - `.gitignore` - Ignored files for Python development.
 - `requirements.txt` - Python dependencies (currently empty).
 - This `README.md` - Project overview, setup, usage, and network configuration.
+- `client_terminal.png.` - Screenshot of client terminal.
 
 ---
 
