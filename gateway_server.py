@@ -1,73 +1,65 @@
-import socket
-import threading
-import subprocess
-import json
-from datetime import datetime
+import socket  # Provides low-level networking interface to create TCP/IP connections
+import threading  # Enables running multiple threads for handling clients concurrently
+import subprocess  # Allows executing system commands like fetching MAC address, uptime
+import json  # For converting Python dictionaries to JSON strings and vice versa
+from datetime import datetime  # For getting and formatting current date and time
 
-HOST = '0.0.0.0'  # Listen on all available network interfaces
-PORT = 9999       # Port for our gateway service
+HOST = '0.0.0.0'  # Bind the server to listen on all available network interfaces
+PORT = 9999       # The port number the server listens on for client connections
 
 def get_system_info():
     """
-    This function gathers the required system information.
-    This is a suggested implementation. You can modify it if you wish.
+    Gathers system information such as MAC address, uptime, and current timestamp.
     """
-    # Get MAC Address for eth0 (a unique identifier for your device)
     try:
+        # Run 'cat /sys/class/net/eth0/address' command to get MAC address of Ethernet
         mac_addr_output = subprocess.run(
             ['cat', '/sys/class/net/eth0/address'],
             capture_output=True, text=True, check=True
         ).stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
-        mac_addr_output = "MAC_NOT_FOUND"
+        mac_addr_output = "MAC_NOT_FOUND"  # Fallback if command fails
 
-    # Get system uptime
     try:
+        # Run 'uptime -p' to get formatted system uptime
         uptime_output = subprocess.run(
             ['uptime', '-p'],
             capture_output=True, text=True, check=True
         ).stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
-        uptime_output = "UPTIME_NOT_FOUND"
+        uptime_output = "UPTIME_NOT_FOUND"  # Fallback if command fails
 
-    # Get current timestamp
+    # Get current date/time in ISO 8601 format
     timestamp = datetime.now().isoformat()
 
-    # Structure the data
+    # Construct a dictionary to hold the info
     info = {
         "device_mac_address": mac_addr_output,
         "timestamp_utc": timestamp,
         "system_uptime": uptime_output
     }
-    return info
+    return info  # Return this dictionary
 
 def handle_client(conn, addr):
     """
-    This function is executed in a separate thread for each client.
+    Handles communication with a connected client in a separate thread.
     """
     print(f"[NEW CONNECTION] {addr} connected.")
     with conn:
         while True:
-            # Wait for a request from the client
-            request = conn.recv(1024).decode('utf-8')
+            request = conn.recv(1024).decode('utf-8')  # Receive a request from client
             if not request:
-                # If client closes connection, break the loop
-                break
+                break  # If no data, client disconnected, exit loop
 
             print(f"Received request from {addr}: {request}")
 
-            # Check if the client's request is valid (e.g., "GET_DATA")
             if request == "GET_DATA":
-                # Call the get_system_info() function to get the data
+                # If client requests data, get system info, serialize to JSON
                 info = get_system_info()
-
-                # Serialize the data to JSON string
                 response = json.dumps(info)
-
-                # Send the encoded response back to the client
-                conn.sendall(response.encode('utf-8'))
+                conn.sendall(response.encode('utf-8'))  # Send JSON response
             else:
-                # Send back error message if request invalid
+                # If unknown request, send error message
                 error_msg = "ERROR: Invalid command"
                 conn.sendall(error_msg.encode('utf-8'))
 
@@ -75,18 +67,20 @@ def handle_client(conn, addr):
 
 def start_server():
     """
-    Starts the main server loop to listen for incoming connections.
+    Starts the server to accept and handle multiple client connections.
     """
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind((HOST, PORT))
-    server_socket.listen()
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create TCP socket
+    server_socket.bind((HOST, PORT))  # Bind socket to host and port
+    server_socket.listen()  # Start listening for incoming connections
     print(f"[LISTENING] Server is listening on {HOST}:{PORT}")
 
+    # Infinite loop to accept clients and start a new thread for each
     while True:
-        conn, addr = server_socket.accept()
-        # Create a new thread to handle the client connection
+        conn, addr = server_socket.accept()  # Accept a client connection
+        # Start a new thread with handle_client function for concurrent handling
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
 
 if __name__ == "__main__":
-    start_server()
+    start_server()  # Start the server when script runs as main program
+
